@@ -6,6 +6,14 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 import time
+import pygsheets
+import pandas as pd
+
+def sheet():
+    gc = pygsheets.authorize(service_file='/Users/daniel/PycharmProjects/scheduler/scheduler-409417-e731d6b458a7.json')
+    df = pd.DataFrame()
+    sh = gc.open('Scheduler Database')
+    current = sh[0]
 
 
 driver = webdriver.Chrome()
@@ -40,6 +48,35 @@ def getinfo(url):
     print(text.split(0, 15))
 
 
+def label(title, contents):
+    if "Release Announcement" in title:
+        return "Release"
+
+#for finding dates when it's most likely to appear first
+def finddate(text):
+    words = text.split(" ")
+    year = "2023"
+    try:
+        a = words.index("2023")
+    except:
+        year = "2024"
+        try:
+            a = words.index("2024")
+        except:
+            return None
+    while not words[words.index(year) - 1][0].isnumeric():
+        words = words[words.index(year) + 1]
+        try:
+            a = words.index(year)
+        except:
+            return None
+    a = words.index(year)
+    return words[a - 2] + " " + words[a - 1] + " " + words[a]
+
+def finddateaddconcert(text):
+    #for later to do, additional concert will usually list the original dates first so
+    #we have to start from the additional concert index
+
 driver.get("https://weverse.io/enhypen/notice")
 
 login()
@@ -60,31 +97,11 @@ for notice in notices:
     driver.switch_to.window(new_tab)
     WebDriverWait(driver, 1000).until(EC.presence_of_element_located((By.CLASS_NAME, 'p')))
     text = driver.find_element(By.CLASS_NAME, 'p').text
-    print(text)
+    #print(text)
+    if not finddate(text) == None:
+        print(finddate(text))
     driver.close()
     driver.switch_to.window(current)
-
-
-
-def label(title, contents):
-    if "Release Announcement" in title:
-        #find date of release
-        a = contents.split(" ")
-        mo = a.get(a.index("2023") - 2)
-        if mo == "January":
-            month = 1
-        elif mo == "February":
-            month = 2
-        elif mo == "March":
-            month = 3
-        elif mo == "April":
-            month = 4
-        elif mo == "May":
-            month = 5
-        # do the rest of this crap later
-        day = int(a.get(a.index("2023") - 2)[0, a.get(a.index("2023")-2) - 1])
-        return "Release"
-
 
 while (True):
     pass
