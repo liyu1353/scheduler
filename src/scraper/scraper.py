@@ -10,7 +10,7 @@ import pygsheets
 import pandas as pd
 
 def sheet():
-    gc = pygsheets.authorize(service_file='/Users/daniel/PycharmProjects/scheduler/scheduler-409417-e731d6b458a7.json')
+    gc = pygsheets.authorize(service_file='/scheduler-409417-e731d6b458a7.json')
     df = pd.DataFrame()
     sh = gc.open('Scheduler Database')
     current = sh[0]
@@ -74,8 +74,7 @@ def finddate(text):
     return words[a - 2] + " " + words[a - 1] + " " + words[a]
 
 def finddateaddconcert(text):
-    #for later to do, additional concert will usually list the original dates first so
-    #we have to start from the additional concert index
+
 
 driver.get("https://weverse.io/enhypen/notice")
 
