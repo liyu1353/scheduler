@@ -9,13 +9,6 @@ import time
 import pygsheets
 import pandas as pd
 
-def sheet():
-    gc = pygsheets.authorize(service_file='/scheduler-409417-e731d6b458a7.json')
-    df = pd.DataFrame()
-    sh = gc.open('Scheduler Database')
-    current = sh[0]
-
-
 driver = webdriver.Chrome()
 
 
@@ -48,32 +41,45 @@ def getinfo(url):
     print(text.split(0, 15))
 
 
-def label(title, contents):
-    if "Release Announcement" in title:
+def classify(title):
+    if "release announcement" in title.capitalize():
         return "Release"
+    if "tour" in title.capitalize():
+        return "Tour"
+    if "fansign" in title.capitalize():
+        return "Fansign"
+    if "participation application" in title.capitalize():
+        return "Music Show"
+    return "None"
+
+def findyear(words):
+    if "2023" in words:
+        return "2023"
+    elif "2023." in words:
+        return "2023."
+    elif "2024" in words:
+        return "2024"
+    elif "2024." in words:
+        return "2024."
+    else:
+        return None
 
 #for finding dates when it's most likely to appear first
 def finddate(text):
     words = text.split(" ")
-    year = "2023"
-    try:
-        a = words.index("2023")
-    except:
-        year = "2024"
-        try:
-            a = words.index("2024")
-        except:
-            return None
-    while not words[words.index(year) - 1][0].isnumeric():
-        words = words[words.index(year) + 1]
-        try:
-            a = words.index(year)
-        except:
+    year = findyear(words)
+    if year is None:
+        return None
+    while not words[words.index(year) - 1][0: len(words[words.index(year)-1]) - 1].isnumeric():
+        words = words[words.index(year) + 1:]
+        year = findyear(words)
+        if year is None:
             return None
     a = words.index(year)
-    return words[a - 2] + " " + words[a - 1] + " " + words[a]
-
-def finddateaddconcert(text):
+    if year.isnumeric():
+        return words[a - 2] + " " + words[a - 1] + " " + words[a]
+    else:
+        return words[a - 2] + " " + words[a - 1] + " " + words[a][0, 3]
 
 
 driver.get("https://weverse.io/enhypen/notice")
@@ -86,6 +92,11 @@ WebDriverWait(driver, 1000).until(
 
 notices = driver.find_elements(By.CLASS_NAME, 'NoticeListView_notice_item_link__uBuv-')
 
+gc = pygsheets.authorize(service_file='/Users/daniel/PycharmProjects/scheduler/creds/scheduler-409417-e731d6b458a7.json')
+df = pd.DataFrame()
+sh = gc.open('Scheduler Database')
+currSheet = sh[0]
+
 for notice in notices:
     WebDriverWait(driver, 1000).until(EC.presence_of_element_located((By.CLASS_NAME, 'NoticeListView_notice_item_link__uBuv-')))
     link = notice.get_attribute("href")
@@ -96,9 +107,14 @@ for notice in notices:
     driver.switch_to.window(new_tab)
     WebDriverWait(driver, 1000).until(EC.presence_of_element_located((By.CLASS_NAME, 'p')))
     text = driver.find_element(By.CLASS_NAME, 'p').text
-    #print(text)
-    if not finddate(text) == None:
-        print(finddate(text))
+    title = driver.find_element(By.CLASS_NAME, 'NoticeModalView_title__512XG').text
+    category = classify(title)
+    if not finddate(text) is None:
+        date = finddate(text)
+        #print(finddate(text))
+        values_list = ['Enhypen', date, category]
+        currSheet.insert_rows(row=2, number=1, values=values_list)
+
     driver.close()
     driver.switch_to.window(current)
 
