@@ -48,7 +48,7 @@ def classify(title):
         return "Tour"
     if "fansign" in title.capitalize():
         return "Fansign"
-    if "participation application" in title.capitalize():
+    if "participation" in title.capitalize():
         return "Music Show"
     return "None"
 
@@ -81,42 +81,68 @@ def finddate(text):
     else:
         return words[a - 2] + " " + words[a - 1] + " " + words[a][0, 3]
 
+def getregion(text):
+    regioncount = 0
+    region = "Korea"
+    if "니" in text[:150] or "korea" in text.lower():
+        regioncount += 1
+        return region
+    elif "united states" in text.lower():
+        regioncount += 1
+        region = "US"
+    elif "ま" in text[:150] or "japan" in text.lower():
+        regioncount += 1
+        region = "Japan"
+    else:
+        region = "International"
+    if regioncount > 1:
+        return "International"
+    else:
+        return region
 
-driver.get("https://weverse.io/enhypen/notice")
+def description(title):
+    if title.lower()[:8] == "[notice]":
+        return title[8:]
+    elif title[:4] == "[공지]":
+        return title[4:]
+    else:
+        return title[6:]
 
-login()
+def enhypen():
+    driver.get("https://weverse.io/enhypen/notice")
+
+    login()
 
 # the events are all class = NoticeListView_notice_item__1-Ud8
-WebDriverWait(driver, 1000).until(
-        EC.presence_of_element_located((By.CLASS_NAME, 'NoticeListView_notice_item_link__uBuv-')))
+    WebDriverWait(driver, 1000).until(
+            EC.presence_of_element_located((By.CLASS_NAME, 'NoticeListView_notice_item_link__uBuv-')))
 
-notices = driver.find_elements(By.CLASS_NAME, 'NoticeListView_notice_item_link__uBuv-')
+    notices = driver.find_elements(By.CLASS_NAME, 'NoticeListView_notice_item_link__uBuv-')
 
-gc = pygsheets.authorize(service_file='/Users/daniel/PycharmProjects/scheduler/creds/scheduler-409417-e731d6b458a7.json')
-df = pd.DataFrame()
-sh = gc.open('Scheduler Database')
-currSheet = sh[0]
+    gc = pygsheets.authorize(service_file='/Users/daniel/PycharmProjects/scheduler/creds/scheduler-409417-e731d6b458a7.json')
+    df = pd.DataFrame()
+    sh = gc.open('Scheduler Database')
+    currSheet = sh[0]
 
-for notice in notices:
-    WebDriverWait(driver, 1000).until(EC.presence_of_element_located((By.CLASS_NAME, 'NoticeListView_notice_item_link__uBuv-')))
-    link = notice.get_attribute("href")
-    current = driver.current_window_handle
-    script = "window.open('" + link + "')"
-    driver.execute_script(script)
-    new_tab = [tab for tab in driver.window_handles if tab != current][0]
-    driver.switch_to.window(new_tab)
-    WebDriverWait(driver, 1000).until(EC.presence_of_element_located((By.CLASS_NAME, 'p')))
-    text = driver.find_element(By.CLASS_NAME, 'p').text
-    title = driver.find_element(By.CLASS_NAME, 'NoticeModalView_title__512XG').text
-    category = classify(title)
-    if not finddate(text) is None:
-        date = finddate(text)
-        #print(finddate(text))
-        values_list = ['Enhypen', date, category]
-        currSheet.insert_rows(row=2, number=1, values=values_list)
+    for notice in notices:
+        WebDriverWait(driver, 1000).until(EC.presence_of_element_located((By.CLASS_NAME, 'NoticeListView_notice_item_link__uBuv-')))
+        link = notice.get_attribute("href")
+        current = driver.current_window_handle
+        script = "window.open('" + link + "')"
+        driver.execute_script(script)
+        new_tab = [tab for tab in driver.window_handles if tab != current][0]
+        driver.switch_to.window(new_tab)
+        WebDriverWait(driver, 1000).until(EC.presence_of_element_located((By.CLASS_NAME, 'p')))
+        text = driver.find_element(By.CLASS_NAME, 'p').text
+        title = driver.find_element(By.CLASS_NAME, 'NoticeModalView_title__512XG').text
+        category = classify(title)
+        region = getregion(text)
+        desc = description(title)
+        if not finddate(text) is None:
+            date = finddate(text)
+            values_list = ['Enhypen', date, category, region, desc]
+            currSheet.insert_rows(row=2, number=1, values=values_list)
+            currSheet.sort_range("A2", "E1000", basecolumnindex=2, sortorder='DESCENDING')
 
-    driver.close()
-    driver.switch_to.window(current)
-
-while (True):
-    pass
+        driver.close()
+        driver.switch_to.window(current)
