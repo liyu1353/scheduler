@@ -9,36 +9,6 @@ import time
 import pygsheets
 import pandas as pd
 
-driver = webdriver.Chrome()
-
-def login():
-    # Login
-    WebDriverWait(driver, 1000).until(
-        EC.presence_of_element_located((By.CSS_SELECTOR, 'button[aria-label="confirm modal"]'))).click()
-
-    WebDriverWait(driver, 1000).until(
-        EC.presence_of_element_located((By.NAME, 'userEmail'))).send_keys("daniel.li7691@gmail.com")
-
-    email_submit = WebDriverWait(driver, 1000).until(
-        EC.presence_of_element_located((By.CSS_SELECTOR, 'button[class="sc-763a3587-1 gOzeoU"]')))
-
-    driver.execute_script("arguments[0].style.zIndex = '9999';", email_submit)
-    email_submit.click()
-
-    password = WebDriverWait(driver, 1000).until(
-        EC.presence_of_element_located((By.NAME, 'password'))).send_keys("Daniel2005!")
-
-    pass_submit = WebDriverWait(driver, 1000).until(
-        EC.presence_of_element_located((By.CSS_SELECTOR, 'button[class="sc-763a3587-1 gOzeoU"]')))
-    driver.execute_script("arguments[0].style.zIndex = '9999';", pass_submit)
-    pass_submit.click()
-
-
-def getinfo(url):
-    body = driver.find_element(By.CLASS_NAME, 'NoticeModalView_detail__t4JWo')
-    text = body.text
-    print(text.split(0, 15))
-
 
 def classify(title):
     if "release announcement" in title.capitalize():
@@ -107,12 +77,8 @@ def description(title):
     else:
         return title[6:]
 
-def txt():
-    driver.get("https://weverse.io/txt/notice")
-
-    login()
-
-# the events are all class = NoticeListView_notice_item__1-Ud8
+def txt(driver):
+    # the events are all class = NoticeListView_notice_item__1-Ud8
     WebDriverWait(driver, 1000).until(
             EC.presence_of_element_located((By.CLASS_NAME, 'NoticeListView_notice_item_link__uBuv-')))
 
@@ -129,7 +95,7 @@ def txt():
         current = driver.current_window_handle
         script = "window.open('" + link + "')"
         driver.execute_script(script)
-        new_tab = [tab for tab in driver.window_handles if tab != current][0]
+        new_tab = [tab for tab in driver.window_handles if tab != current][1]
         driver.switch_to.window(new_tab)
         WebDriverWait(driver, 1000).until(EC.presence_of_element_located((By.CLASS_NAME, 'p')))
         text = driver.find_element(By.CLASS_NAME, 'p').text
@@ -141,7 +107,7 @@ def txt():
             date = finddate(text)
             values_list = ['TXT', date, category, region, desc]
             currSheet.insert_rows(row=2, number=1, values=values_list)
-            currSheet.sort_range("A2", "E1000", basecolumnindex=2, sortorder='DESCENDING')
+            currSheet.sort_range("A2", "E1000", basecolumnindex=1, sortorder='DESCENDING')
 
         driver.close()
         driver.switch_to.window(current)
