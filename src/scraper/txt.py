@@ -19,6 +19,8 @@ def classify(title):
         return "Fansign"
     if "participate" in title.capitalize():
         return "Music Show"
+    if "awards" in title.capitalize():
+        return "Award Show"
     return "None"
 
 def findyear(words):

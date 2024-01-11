@@ -15,9 +15,9 @@ def classify(title):
         return "Release"
     if "tour" in title.capitalize():
         return "Tour"
-    if "fansign" in title.capitalize():
+    if "fan-signing" in title.capitalize():
         return "Fansign"
-    if "participation" in title.capitalize():
+    if "pre-recording" in title.capitalize() or "live" in title.capitalize():
         return "Music Show"
     if "awards" in title.capitalize():
         return "Award Show"
@@ -81,7 +81,7 @@ def description(title):
     else:
         return title[6:]
 
-def enhypen(driver):
+def newjeans(driver):
     WebDriverWait(driver, 1000).until(
             EC.presence_of_element_located((By.CLASS_NAME, 'NoticeListView_notice_item_link__uBuv-')))
 
@@ -107,7 +107,7 @@ def enhypen(driver):
         desc = description(title)
         if not finddate(text) is None:
             date = finddate(text)
-            values_list = ['Enhypen', date, category, region, desc]
+            values_list = ['NewJeans', date, category, region, desc]
             currSheet.insert_rows(row=2, number=1, values=values_list)
             currSheet.sort_range("A2", "E1000", basecolumnindex=1, sortorder='DESCENDING')
 
