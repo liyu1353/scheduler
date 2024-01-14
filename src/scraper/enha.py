@@ -54,6 +54,43 @@ def finddate(text):
     else:
         return words[a - 2] + " " + words[a - 1] + " " + words[a][0, 3]
 
+
+def findtoursale(words):
+    newwords = ""
+    temp = words.lower().split(" ")
+    text = ""
+    for word in temp:
+        if "\n" in word:
+            a = word.split("\n")
+            for thing in a:
+                text += thing + " "
+        else:
+            text += word + " "
+    if "onsale" in text:
+        text = text[text.index("onsale"):text.index("onsale") + 100]
+        for thing in text:
+            newwords += thing
+        print(newwords)
+        return finddate(newwords)
+
+def finddateadd(words):
+    newwords = ""
+    temp = words.lower().split(" ")
+    text = ""
+    for word in temp:
+        if "\n" in word:
+            a = word.split("\n")
+            for thing in a:
+                text += thing + " "
+        else:
+            text += word + " "
+    if "[additional" in text:
+        text = text[text.index("[additional"):text.index("[additional") + 100]
+        for thing in text:
+            newwords += thing
+        print(newwords)
+        return finddate(newwords)
+
 def getregion(text):
     regioncount = 0
     region = "Korea"
@@ -105,7 +142,15 @@ def enhypen(driver):
         category = classify(title)
         region = getregion(text)
         desc = description(title)
-        if not finddate(text) is None:
+        if "additional concert" in title.lower():
+            date = finddateadd(text)
+            saledate = findtoursale(text)
+            values_list = ['Enhypen', date, category, region, desc]
+            currSheet.insert_rows(row=2, number=1, values=values_list)
+            valueslist2 = ['Enhypen', saledate, category, region, "Ticket Sale for" + desc]
+            currSheet.insert_rows(row=2, number=1, values=valueslist2)
+            currSheet.sort_range("A2", "E1000", basecolumnindex=1, sortorder='DESCENDING')
+        elif not finddate(text) is None:
             date = finddate(text)
             values_list = ['Enhypen', date, category, region, desc]
             currSheet.insert_rows(row=2, number=1, values=values_list)
