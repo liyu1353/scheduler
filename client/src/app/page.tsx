@@ -1,5 +1,26 @@
 import Image from 'next/image'
 
+const GSheetReader = require('g-sheets-api');
+
+const options = {
+  apiKey: 'AIzaSyD4LnmU8PudTtBQ7JOr60zsltPktF9FtrM',
+  sheetId: '1MdxRxvXXiE8_k_2_wr4_U70fBVt5j4WY137z9Pnj8qQ',
+  sheetNumber: 1,
+  sheetName: 'Scheduler Database', // if sheetName is supplied, this will take precedence over sheetNumber
+  returnAllResults: false
+}
+function Top() {
+  return (
+      <button>Test...</button>
+  );
+}
+
+function Calendar(){
+  //calendar code i guess
+  // sheet key: 1MdxRxvXXiE8_k_2_wr4_U70fBVt5j4WY137z9Pnj8qQ
+
+}
+
 export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
