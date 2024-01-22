@@ -1,4 +1,13 @@
 'use client'
+import GSheetReader from 'g-sheets-api';
+
+const options = {
+    apiKey: 'AIzaSyD4LnmU8PudTtBQ7JOr60zsltPktF9FtrM',
+    sheetId: '1MdxRxvXXiE8_k_2_wr4_U70fBVt5j4WY137z9Pnj8qQ',
+    sheetNumber: 1,
+    sheetName: 'Scheduler Database', // if sheetName is supplied, this will take precedence over sheetNumber
+    returnAllResults: false
+}
 
 function CalendarDays(props) {
     let firstDayOfMonth = new Date(props.day.getFullYear(), props.day.getMonth(), 1);
@@ -40,6 +49,23 @@ function CalendarDays(props) {
             }
         </div>
     )
+}
+
+function Clicked(props, day){
+    props.changeCurrentDay(day);
+    GSheetReader(
+        options,
+        results => {
+            for(const result in results){
+                if(result.get("Date").equals(day)){
+                    //popup thing here
+                }
+            }
+            // do something with the results here
+        },
+        error => {
+            // OPTIONAL: handle errors here
+        });
 }
 
 export default CalendarDays;
