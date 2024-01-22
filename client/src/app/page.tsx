@@ -51,8 +51,7 @@ export default function Home() {
                 <h2>Calendar</h2>
 
                 <div id="calendar-module">
-                    <Calendar>
-                    </Calendar>
+                    <Calendar/>
                 </div>
             </section>
         </>
